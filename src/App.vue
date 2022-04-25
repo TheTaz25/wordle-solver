@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive } from "vue";
-import { SolveState, type StateProps } from "./components/interfaces";
+import { onMounted, onUnmounted, reactive, watch, ref } from "vue";
+import {
+  SolveState,
+  type StateProps,
+  type Rules,
+} from "./components/interfaces";
 import WordleContainer from "./components/WordleContainer.vue";
+import PossibleWordles from "./components/PossibleWordles.vue";
 
 const state = reactive<StateProps>({
   tries: 6,
@@ -10,8 +15,9 @@ const state = reactive<StateProps>({
   solveMatrix: [],
 });
 
+const possibilities = ref<Array<Rules>>([]);
+
 const onKeyPress = (event: KeyboardEvent) => {
-  console.log(event.code);
   // Handle deletion
   if (event.code === "Backspace") {
     if (state.sampleData[state.currentTry - 1] !== undefined) {
@@ -19,6 +25,7 @@ const onKeyPress = (event: KeyboardEvent) => {
       state.sampleData[state.currentTry - 1] = state.sampleData[
         state.currentTry - 1
       ].substring(0, l - 1);
+      state.solveMatrix[state.currentTry - 1] = SolveState.WRONG.repeat(5);
     }
     return;
   }
@@ -42,17 +49,16 @@ const onKeyPress = (event: KeyboardEvent) => {
     if (state.sampleData[state.currentTry - 1] === undefined) {
       // Handle first char entry
       state.sampleData[state.currentTry - 1] = lowered;
-      state.solveMatrix[state.currentTry - 1] = SolveState.WRONG;
+      state.solveMatrix[state.currentTry - 1] = SolveState.WRONG.repeat(5);
     } else if (state.sampleData[state.currentTry - 1].length < 5) {
       // Do not append more than 5 chars
       state.sampleData[state.currentTry - 1] += lowered;
-      state.solveMatrix[state.currentTry - 1] += SolveState.WRONG;
     }
   }
 };
 
 const handleToggleMatrix = (tryIndex: number, wordIndex: number) => {
-  if (!state.sampleData?.[tryIndex - 1]?.[wordIndex]) {
+  if (!state.sampleData?.[tryIndex - 1]?.[wordIndex - 1]) {
     return;
   }
   const target = state.solveMatrix?.[tryIndex - 1].split("");
@@ -64,6 +70,49 @@ const handleToggleMatrix = (tryIndex: number, wordIndex: number) => {
       : SolveState.WRONG;
   state.solveMatrix[tryIndex - 1] = target.join("");
 };
+
+const calculateNewPossibilities = (
+  samples: Array<string>,
+  solveMatrix: Array<string>
+) => {
+  const fiveCharWords = samples
+    .map((sample, i) => {
+      if (sample.length === 5) {
+        return [sample, solveMatrix[i]];
+      }
+      return undefined;
+    })
+    .filter((x): x is [string, string] => x !== undefined);
+  const rules: Array<Rules> = [];
+  fiveCharWords.forEach(([sample, matrix]) => {
+    const splitSample = sample.split("");
+    const splitMatrix = matrix.split("");
+    splitMatrix.forEach((m, i) => {
+      const x = i - 1;
+      switch (m) {
+        case "0":
+          rules.push({ type: "CORRECT", position: x, char: splitSample[x] });
+          break;
+        case "1":
+          console.log(splitSample, x);
+          rules.push({ type: "CONTAIN", position: x, char: splitSample[x] });
+          break;
+        case "2":
+          rules.push({ type: "NOT", char: splitSample[x] });
+          break;
+        default:
+      }
+    });
+  });
+  return rules;
+};
+
+watch(state, (newState) => {
+  possibilities.value = calculateNewPossibilities(
+    newState.sampleData,
+    newState.solveMatrix
+  );
+});
 
 onMounted(() => {
   document.body.addEventListener("keydown", onKeyPress);
@@ -83,17 +132,29 @@ onUnmounted(() => {
       :solve-matrix="state.solveMatrix"
       @toggle-matrix="handleToggleMatrix"
     />
+    <PossibleWordles :rules="possibilities"></PossibleWordles>
   </main>
 </template>
 
 <style>
 @import "./assets/base.css";
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
   padding: 2rem;
-
+  width: 100%;
   font-weight: normal;
+}
+
+main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+main > * {
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 
 @media (hover: hover) {

@@ -24,3 +24,12 @@ const handleToggle = (tryIndex: number, wordIndex: number) => {
     </div>
   </div>
 </template>
+
+<style>
+.container {
+  display: flex;
+  align-items: flex-start;
+  top: 2rem;
+  position: sticky;
+}
+</style>
