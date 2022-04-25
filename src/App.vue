@@ -42,24 +42,26 @@ const onKeyPress = (event: KeyboardEvent) => {
     if (state.sampleData[state.currentTry - 1] === undefined) {
       // Handle first char entry
       state.sampleData[state.currentTry - 1] = lowered;
-      state.solveMatrix[state.currentTry - 1] = SolveState.WRONG.toString();
+      state.solveMatrix[state.currentTry - 1] = SolveState.WRONG;
     } else if (state.sampleData[state.currentTry - 1].length < 5) {
       // Do not append more than 5 chars
       state.sampleData[state.currentTry - 1] += lowered;
-      state.solveMatrix[state.currentTry - 1] += SolveState.WRONG.toString();
+      state.solveMatrix[state.currentTry - 1] += SolveState.WRONG;
     }
   }
 };
 
 const handleToggleMatrix = (tryIndex: number, wordIndex: number) => {
-  console.log(tryIndex, wordIndex);
+  if (!state.sampleData?.[tryIndex - 1]?.[wordIndex]) {
+    return;
+  }
   const target = state.solveMatrix?.[tryIndex - 1].split("");
   target[wordIndex] =
     target[wordIndex] === "2"
-      ? SolveState.CONTAINS.toString()
+      ? SolveState.CONTAINS
       : target[wordIndex] === "1"
-      ? SolveState.CORRECT.toString()
-      : SolveState.WRONG.toString();
+      ? SolveState.CORRECT
+      : SolveState.WRONG;
   state.solveMatrix[tryIndex - 1] = target.join("");
 };
 

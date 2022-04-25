@@ -1,7 +1,7 @@
 export enum SolveState {
-  CORRECT,
-  CONTAINS,
-  WRONG,
+  CORRECT = "0",
+  CONTAINS = "1",
+  WRONG = "2",
 }
 
 export interface StateProps {
