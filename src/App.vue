@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, reactive } from "vue";
-import type { StateProps } from "./components/interfaces";
+import { SolveState, type StateProps } from "./components/interfaces";
 import WordleContainer from "./components/WordleContainer.vue";
 
 const state = reactive<StateProps>({
   tries: 6,
   currentTry: 1,
   sampleData: [],
+  solveMatrix: [],
 });
 
 const onKeyPress = (event: KeyboardEvent) => {
   console.log(event.code);
+  // Handle deletion
   if (event.code === "Backspace") {
     if (state.sampleData[state.currentTry - 1] !== undefined) {
       const l = state.sampleData[state.currentTry - 1].length;
@@ -21,26 +23,44 @@ const onKeyPress = (event: KeyboardEvent) => {
     return;
   }
 
+  // Handle submission
   if (
-    event.code === "Enter" &&
-    state.sampleData[state.currentTry - 1].length === 5 &&
-    state.currentTry < state.tries
+    event.code === "Enter" && // User pressed enter
+    state.sampleData[state.currentTry - 1].length === 5 && // Current word-length is 5
+    state.currentTry < state.tries // Not at last try
   ) {
     state.currentTry++;
+    return;
   }
 
   const lowered = event.key.toLowerCase();
   if (
-    lowered.charCodeAt(0) >= 97 &&
-    lowered.charCodeAt(0) <= 122 &&
-    lowered.length === 1
+    lowered.charCodeAt(0) >= 97 && // a or bigger
+    lowered.charCodeAt(0) <= 122 && // z or lower
+    lowered.length === 1 // ensure a character has been hit
   ) {
     if (state.sampleData[state.currentTry - 1] === undefined) {
+      // Handle first char entry
       state.sampleData[state.currentTry - 1] = lowered;
+      state.solveMatrix[state.currentTry - 1] = SolveState.WRONG.toString();
     } else if (state.sampleData[state.currentTry - 1].length < 5) {
+      // Do not append more than 5 chars
       state.sampleData[state.currentTry - 1] += lowered;
+      state.solveMatrix[state.currentTry - 1] += SolveState.WRONG.toString();
     }
   }
+};
+
+const handleToggleMatrix = (tryIndex: number, wordIndex: number) => {
+  console.log(tryIndex, wordIndex);
+  const target = state.solveMatrix?.[tryIndex - 1].split("");
+  target[wordIndex] =
+    target[wordIndex] === "2"
+      ? SolveState.CONTAINS.toString()
+      : target[wordIndex] === "1"
+      ? SolveState.CORRECT.toString()
+      : SolveState.WRONG.toString();
+  state.solveMatrix[tryIndex - 1] = target.join("");
 };
 
 onMounted(() => {
@@ -58,6 +78,8 @@ onUnmounted(() => {
       :current-try="state.currentTry"
       :tries="state.tries"
       :sample-data="state.sampleData"
+      :solve-matrix="state.solveMatrix"
+      @toggle-matrix="handleToggleMatrix"
     />
   </main>
 </template>

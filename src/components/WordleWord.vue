@@ -1,13 +1,29 @@
 <script setup lang="ts">
+import { SolveState } from "./interfaces";
 interface Props {
   word?: string;
+  tryIndex: number;
+  matrix?: string;
 }
+defineEmits<{
+  (e: "toggleMatrix", tryIndex: number, wordIndex: number): void;
+}>();
 defineProps<Props>();
 </script>
 
 <template>
   <div class="wordle-word">
-    <div v-for="n in 5" :key="n">{{ $props.word?.[n - 1] ?? "" }}</div>
+    <div
+      v-for="n in 5"
+      :key="n"
+      :class="{
+        contains: $props.matrix?.[n] === SolveState.CONTAINS.toString(),
+        correct: $props.matrix?.[n] === SolveState.CORRECT.toString(),
+      }"
+      @click="$emit('toggleMatrix', tryIndex, n)"
+    >
+      {{ $props.word?.[n - 1] ?? "" }}
+    </div>
   </div>
 </template>
 
@@ -27,5 +43,15 @@ defineProps<Props>();
   font-weight: bold;
   font-size: xx-large;
   text-transform: uppercase;
+
+  &.contains {
+    background-color: rgb(206, 206, 87);
+    color: #333;
+  }
+
+  &.correct {
+    background-color: rgb(95, 178, 95);
+    color: #333;
+  }
 }
 </style>
