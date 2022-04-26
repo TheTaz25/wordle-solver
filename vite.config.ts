@@ -7,6 +7,7 @@ import vueTypeImports from "vite-plugin-vue-type-imports";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.NODE_ENV === "production" ? "wordle-solver/" : "",
   plugins: [vue(), vueJsx(), vueTypeImports()],
   resolve: {
     alias: {
