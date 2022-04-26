@@ -34,8 +34,7 @@ const filterer = (rules: Array<Rules>) => {
 };
 
 watch(props, (newProps) => {
-  let x = filterer(newProps.rules);
-  filteredWords.value = x;
+  filteredWords.value = filterer(newProps.rules);
 });
 </script>
 
