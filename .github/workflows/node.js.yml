@@ -31,4 +31,4 @@ jobs:
     - name: GitHub Pages Deploy
       uses: crazy-max/ghaction-github-pages@v2.6.0
       with:
-        build_dir: /docs
+        build_dir: .
