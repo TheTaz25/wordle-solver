@@ -19,6 +19,7 @@ defineProps<Props>();
       :class="{
         contains: $props.matrix?.[n] === SolveState.CONTAINS.toString(),
         correct: $props.matrix?.[n] === SolveState.CORRECT.toString(),
+        empty: !$props.word?.[n],
       }"
       @click="$emit('toggleMatrix', tryIndex, n)"
     >
@@ -35,7 +36,7 @@ defineProps<Props>();
 .wordle-word > div {
   width: 64px;
   height: 64px;
-  background-color: #333;
+  border: 4px solid #333;
   margin: 4px 4px;
   display: flex;
   justify-content: center;
@@ -44,6 +45,12 @@ defineProps<Props>();
   font-size: xx-large;
   text-transform: uppercase;
   user-select: none;
+  cursor: pointer;
+
+  &:not(.empty) {
+    background-color: #333;
+    border: none;
+  }
 
   &.contains {
     background-color: rgb(206, 206, 87);
