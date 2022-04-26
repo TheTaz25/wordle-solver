@@ -14,7 +14,7 @@ defineProps<Props>();
 <template>
   <div class="wordle-word">
     <div
-      v-for="n in 5"
+      v-for="(i, n) in 5"
       :key="n"
       :class="{
         contains: $props.matrix?.[n] === SolveState.CONTAINS.toString(),
@@ -22,7 +22,7 @@ defineProps<Props>();
       }"
       @click="$emit('toggleMatrix', tryIndex, n)"
     >
-      {{ $props.word?.[n - 1] ?? "" }}
+      {{ $props.word?.[n] ?? "" }}
     </div>
   </div>
 </template>
@@ -43,6 +43,7 @@ defineProps<Props>();
   font-weight: bold;
   font-size: xx-large;
   text-transform: uppercase;
+  user-select: none;
 
   &.contains {
     background-color: rgb(206, 206, 87);

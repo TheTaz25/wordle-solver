@@ -14,10 +14,10 @@ const handleToggle = (tryIndex: number, wordIndex: number) => {
 
 <template>
   <div class="container">
-    <div v-for="n in props.tries" :key="n">
+    <div v-for="(i, n) in props.tries" :key="n">
       <Word
-        :word="props.sampleData[n - 1]"
-        :matrix="props.solveMatrix[n - 1]"
+        :word="props.sampleData[n]"
+        :matrix="props.solveMatrix[n]"
         :try-index="n"
         @toggle-matrix="handleToggle"
       />
@@ -29,7 +29,7 @@ const handleToggle = (tryIndex: number, wordIndex: number) => {
 .container {
   display: flex;
   align-items: flex-start;
-  top: 2rem;
+  top: 25%;
   position: sticky;
 }
 </style>
