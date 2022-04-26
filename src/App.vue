@@ -10,7 +10,7 @@ import PossibleWordles from "./components/PossibleWordles.vue";
 
 const state = reactive<StateProps>({
   tries: 6,
-  currentTry: 1,
+  currentTry: 0,
   sampleData: [],
   solveMatrix: [],
 });
@@ -20,12 +20,12 @@ const possibilities = ref<Array<Rules>>([]);
 const onKeyPress = (event: KeyboardEvent) => {
   // Handle deletion
   if (event.code === "Backspace") {
-    if (state.sampleData[state.currentTry - 1] !== undefined) {
-      const l = state.sampleData[state.currentTry - 1].length;
-      state.sampleData[state.currentTry - 1] = state.sampleData[
-        state.currentTry - 1
+    if (state.sampleData[state.currentTry] !== undefined) {
+      const l = state.sampleData[state.currentTry].length;
+      state.sampleData[state.currentTry] = state.sampleData[
+        state.currentTry
       ].substring(0, l - 1);
-      state.solveMatrix[state.currentTry - 1] = SolveState.WRONG.repeat(5);
+      state.solveMatrix[state.currentTry] = SolveState.WRONG.repeat(5);
     }
     return;
   }
@@ -33,7 +33,7 @@ const onKeyPress = (event: KeyboardEvent) => {
   // Handle submission
   if (
     event.code === "Enter" && // User pressed enter
-    state.sampleData[state.currentTry - 1].length === 5 && // Current word-length is 5
+    state.sampleData[state.currentTry].length === 5 && // Current word-length is 5
     state.currentTry < state.tries // Not at last try
   ) {
     state.currentTry++;
@@ -46,29 +46,29 @@ const onKeyPress = (event: KeyboardEvent) => {
     lowered.charCodeAt(0) <= 122 && // z or lower
     lowered.length === 1 // ensure a character has been hit
   ) {
-    if (state.sampleData[state.currentTry - 1] === undefined) {
+    if (state.sampleData[state.currentTry] === undefined) {
       // Handle first char entry
-      state.sampleData[state.currentTry - 1] = lowered;
-      state.solveMatrix[state.currentTry - 1] = SolveState.WRONG.repeat(5);
-    } else if (state.sampleData[state.currentTry - 1].length < 5) {
+      state.sampleData[state.currentTry] = lowered;
+      state.solveMatrix[state.currentTry] = SolveState.WRONG.repeat(5);
+    } else if (state.sampleData[state.currentTry].length < 5) {
       // Do not append more than 5 chars
-      state.sampleData[state.currentTry - 1] += lowered;
+      state.sampleData[state.currentTry] += lowered;
     }
   }
 };
 
 const handleToggleMatrix = (tryIndex: number, wordIndex: number) => {
-  if (!state.sampleData?.[tryIndex - 1]?.[wordIndex - 1]) {
+  if (!state.sampleData?.[tryIndex]?.[wordIndex]) {
     return;
   }
-  const target = state.solveMatrix?.[tryIndex - 1].split("");
+  const target = state.solveMatrix?.[tryIndex].split("");
   target[wordIndex] =
-    target[wordIndex] === "2"
+    target[wordIndex] === SolveState.WRONG
       ? SolveState.CONTAINS
-      : target[wordIndex] === "1"
+      : target[wordIndex] === SolveState.CONTAINS
       ? SolveState.CORRECT
       : SolveState.WRONG;
-  state.solveMatrix[tryIndex - 1] = target.join("");
+  state.solveMatrix[tryIndex] = target.join("");
 };
 
 const calculateNewPossibilities = (
@@ -88,16 +88,16 @@ const calculateNewPossibilities = (
     const splitSample = sample.split("");
     const splitMatrix = matrix.split("");
     splitMatrix.forEach((m, i) => {
-      const x = i - 1;
+      const x = i;
       switch (m) {
-        case "0":
+        case SolveState.CORRECT:
           rules.push({ type: "CORRECT", position: x, char: splitSample[x] });
           break;
-        case "1":
+        case SolveState.CONTAINS:
           console.log(splitSample, x);
           rules.push({ type: "CONTAIN", position: x, char: splitSample[x] });
           break;
-        case "2":
+        case SolveState.WRONG:
           rules.push({ type: "NOT", char: splitSample[x] });
           break;
         default:
@@ -105,6 +105,11 @@ const calculateNewPossibilities = (
     });
   });
   return rules;
+};
+
+const fillCompleteWordle = (wordle: string) => {
+  state.sampleData[state.currentTry] = wordle;
+  state.solveMatrix[state.currentTry] = SolveState.WRONG.repeat(5);
 };
 
 watch(state, (newState) => {
@@ -132,7 +137,10 @@ onUnmounted(() => {
       :solve-matrix="state.solveMatrix"
       @toggle-matrix="handleToggleMatrix"
     />
-    <PossibleWordles :rules="possibilities"></PossibleWordles>
+    <PossibleWordles
+      @fill-wordle="fillCompleteWordle"
+      :rules="possibilities"
+    ></PossibleWordles>
   </main>
 </template>
 
