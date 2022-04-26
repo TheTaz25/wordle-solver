@@ -19,6 +19,9 @@ const handleToggle = (tryIndex: number, wordIndex: number) => {
         :word="props.sampleData[n]"
         :matrix="props.solveMatrix[n]"
         :try-index="n"
+        :class="{
+          active: n === props.currentTry,
+        }"
         @toggle-matrix="handleToggle"
       />
     </div>
@@ -31,5 +34,19 @@ const handleToggle = (tryIndex: number, wordIndex: number) => {
   align-items: flex-start;
   top: 25%;
   position: sticky;
+}
+.active::before {
+  content: ">";
+  position: absolute;
+  font-size: xx-large;
+  top: 0.5rem;
+  left: -2rem;
+}
+.active::after {
+  content: "<";
+  position: absolute;
+  font-size: xx-large;
+  top: 0.5rem;
+  right: -2rem;
 }
 </style>
